@@ -38,7 +38,6 @@ class HomeViewModel(
                 is Result.Success -> {
                     _isLoading.value = false
                     if (result.data != null) {
-                        Log.d("Weather","Old Data")
                         val weather = result.data
                         _dataFetchState.value = true
                         _weather.value = weather
@@ -47,6 +46,7 @@ class HomeViewModel(
                             _lastUpdatedTime.value=currentSystemTime()
                             sPref.edit().putString(LAST_UPDATED_TIME,_lastUpdatedTime.value).apply()
                             Log.d("Weather","${_lastUpdatedTime.value}  ${sPref.getString(LAST_UPDATED_TIME,null)}")
+                            Log.d("Location",location.toString())
                         } else {
                             _lastUpdatedTime.value=sPref.getString(LAST_UPDATED_TIME,null)
                             Log.d("Weather","${_lastUpdatedTime.value}")
@@ -63,14 +63,6 @@ class HomeViewModel(
                 is Result.Loading -> _isLoading.postValue(true)
             }
         }
-    }
-
-    @SuppressLint("SimpleDateFormat")
-    fun currentSystemTime(): String {
-        val currentTime = System.currentTimeMillis()
-        val date = Date(currentTime)
-        val dateFormat = SimpleDateFormat("EEEE MMM d, hh:mm aaa")
-        return dateFormat.format(date)
     }
 
     private fun refreshWeather(location: LocationModel) {

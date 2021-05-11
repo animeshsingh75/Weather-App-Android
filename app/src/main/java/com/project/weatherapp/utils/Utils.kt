@@ -1,5 +1,6 @@
 package com.project.weatherapp.utils
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -10,6 +11,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import java.text.DecimalFormat
+import java.text.SimpleDateFormat
+import java.util.*
 
 fun convertKelvinToCelsius(number: Number): Double {
     return DecimalFormat().run {
@@ -68,4 +71,11 @@ fun isNetworkConnected(context: Context):Boolean{
     } catch (e: NullPointerException) {
         false
     }
+}
+@SuppressLint("SimpleDateFormat")
+fun currentSystemTime(): String {
+    val currentTime = System.currentTimeMillis()
+    val date = Date(currentTime)
+    val dateFormat = SimpleDateFormat("EEEE MMM d, hh:mm aaa")
+    return dateFormat.format(date)
 }

@@ -58,7 +58,7 @@ class HomeFragment : Fragment() {
         binding = HomeFragmentBinding.inflate(layoutInflater)
         viewModel.weather.observe(
             viewLifecycleOwner,
-            Observer{ weather ->
+            Observer { weather ->
                 binding.tvPlace.text = weather!!.name
                 binding.tvTemp.text = "${weather.networkWeatherCondition.temp}" + "\u2103"
                 //+ " \u2109" for fahrenheit
@@ -126,7 +126,7 @@ class HomeFragment : Fragment() {
         )
         viewModel.lastUpdatedTime.observe(
             viewLifecycleOwner,
-            { time ->
+            {time ->
                 binding.tvCurrentTime.text = time
             }
         )
@@ -164,7 +164,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun invokeLocationAction() {
-        Log.d("Weather","Inside")
+        Log.d("Weather", "Inside")
         when {
             allPermissionsGranted() -> {
                 viewModel.getLocationLiveData().observeOnce(
@@ -177,7 +177,7 @@ class HomeFragment : Fragment() {
                 )
                 viewModel.firstTimeNoInternet.observe(
                     viewLifecycleOwner,
-                    Observer {
+                    {
                         if (it) {
                             Log.d("Weather", "FirstTime")
                             AlertDialog.Builder(requireContext())
