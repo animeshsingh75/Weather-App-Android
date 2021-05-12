@@ -36,6 +36,7 @@
                 android:layout_below="@+id/tvPlace"
                 android:gravity="center_horizontal"
                 android:layout_marginTop="15dp"
+                android:layout_marginBottom="30dp"
                 android:textColor="#000000"
                 android:textSize="18sp"
                 tools:text="Sunday may 9, 04:29 AM" />
@@ -50,7 +51,6 @@
                 custom:weatherIconSize="200" />
 
             <TextView
-                android:layout_marginTop="-40dp"
                 android:id="@+id/tvTemp"
                 android:layout_width="match_parent"
                 android:gravity="center_horizontal"

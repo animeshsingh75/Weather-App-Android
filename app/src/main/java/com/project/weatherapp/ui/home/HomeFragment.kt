@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -40,9 +41,9 @@ class HomeFragment : Fragment() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        Log.d("Weather", "InsideFunc")
         super.onCreate(savedInstanceState)
         prefs = SharedPreferenceHelper.getInstance(requireContext())
+        Log.d("Condition",viewModel.firstTimeNoInternet.value.toString())
         GpsUtil(requireContext()).turnGPSOn(object : GpsUtil.OnGpsListener {
             override fun gpsStatus(isGPSEnabled: Boolean) {
                 this@HomeFragment.isGPSEnabled = isGPSEnabled
@@ -134,12 +135,13 @@ class HomeFragment : Fragment() {
             val workerScope = CoroutineScope(Dispatchers.Main)
             workerScope.launch {
                 delay(2000)
+                Log.d("Location","Called")
                 binding.swipeToLoad.isRefreshing = false
                 if (isNetworkConnected(requireActivity())) {
                     viewModel.getLocationLiveData().observeOnce(
                         viewLifecycleOwner,
-                        Observer {
-                            viewModel.getWeather(it)
+                        {
+                            viewModel.refreshWeather(it)
                             viewModel.doneRefreshing()
                             binding.swipeToLoad.isRefreshing = false
                         }
@@ -164,29 +166,35 @@ class HomeFragment : Fragment() {
     }
 
     private fun invokeLocationAction() {
-        Log.d("Weather", "Inside")
         when {
             allPermissionsGranted() -> {
+
                 viewModel.getLocationLiveData().observeOnce(
                     viewLifecycleOwner,
-                    Observer { location ->
+                    { location ->
                         if (location != null) {
-                            viewModel.getWeather(location)
+                            if(isNetworkConnected(requireContext())){
+                                viewModel.refreshWeather(location)
+                            }else{
+                                viewModel.getWeather(location)
+                            }
                         }
                     }
                 )
+
                 viewModel.firstTimeNoInternet.observe(
                     viewLifecycleOwner,
                     {
+                        Log.d("CONDITION","condition")
                         if (it) {
-                            Log.d("Weather", "FirstTime")
                             AlertDialog.Builder(requireContext())
                                 .setTitle("No network")
                                 .setMessage("No offline weather is stored for the first time the app is launched")
                                 .setNegativeButton(
                                     "Ok "
-                                ) { _, _ -> requireActivity().finish() }
+                                ) { dialog, which -> requireActivity().finishAffinity() }
                                 .show()
+
                         }
                     }
                 )

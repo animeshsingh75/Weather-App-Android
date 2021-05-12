@@ -10,6 +10,8 @@ import com.project.weatherapp.data.model.LocationModel
 import com.project.weatherapp.data.model.Weather
 import com.project.weatherapp.data.source.repository.WeatherRepository
 import com.project.weatherapp.utils.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -45,11 +47,9 @@ class HomeViewModel(
                         if (isNetworkConnected(getApplication<WeatherApplication>())) {
                             _lastUpdatedTime.value=currentSystemTime()
                             sPref.edit().putString(LAST_UPDATED_TIME,_lastUpdatedTime.value).apply()
-                            Log.d("Weather","${_lastUpdatedTime.value}  ${sPref.getString(LAST_UPDATED_TIME,null)}")
                             Log.d("Location",location.toString())
                         } else {
                             _lastUpdatedTime.value=sPref.getString(LAST_UPDATED_TIME,null)
-                            Log.d("Weather","${_lastUpdatedTime.value}")
                         }
                     } else {
                         refreshWeather(location)
@@ -65,16 +65,25 @@ class HomeViewModel(
         }
     }
 
-    private fun refreshWeather(location: LocationModel) {
+    fun refreshWeather(location: LocationModel) {
+        Log.d("Location50","Here1")
         _isLoading.value = true
-        viewModelScope.launch {
+        GlobalScope.launch(Dispatchers.Main){
+            Log.d("Location50","Here2")
+            if(!isNetworkConnected(getApplication<WeatherApplication>())){
+                _firstTimeNoInternet.value=true
+                
+            }
             when (val result = repository.getWeather(location, true)) {
                 is Result.Success -> {
+                    Log.d("Location50",location.toString())
                     _isLoading.value = false
+                    _firstTimeNoInternet.value=false
                     if(isNetworkConnected(getApplication<WeatherApplication>())){
-                        Log.d("Weather","New Data")
+                        Log.d("Location50","Here3")
                         _firstTimeNoInternet.value=false
                         if (result.data != null) {
+                            Log.d("Location",result.data.toString())
                             val weather = result.data.apply {
                                 this.networkWeatherCondition.temp =
                                     convertKelvinToCelsius(this.networkWeatherCondition.temp)
@@ -87,21 +96,25 @@ class HomeViewModel(
                             repository.deleteWeatherData()
                             repository.storeWeatherData(weather)
                         } else {
+                            Log.d("Location50","Here4")
                             _weather.postValue(null)
                             _dataFetchState.postValue(false)
                         }
                     }else{
-                        Log.d("Weather","No Data")
                         _firstTimeNoInternet.value=true
                     }
 
                 }
                 is Error -> {
+                    Log.d("Location50","Here5")
                     _firstTimeNoInternet.value=true
                     _isLoading.value = false
                     _dataFetchState.value = false
                 }
-                is Result.Loading -> _isLoading.postValue(true)
+                is Result.Loading -> {
+                    Log.d("Location50","Here6")
+                    _isLoading.postValue(true)
+                }
             }
         }
     }

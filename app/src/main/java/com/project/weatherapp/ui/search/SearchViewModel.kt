@@ -1,29 +1,21 @@
 package com.project.weatherapp.ui.search
 
-import android.annotation.SuppressLint
 import android.app.Application
-import android.content.Intent
-import android.util.Log
 import androidx.lifecycle.*
-import androidx.preference.PreferenceManager
-import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.model.TypeFilter
 import com.google.android.libraries.places.widget.Autocomplete
-import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.project.weatherapp.WeatherApplication
-import com.project.weatherapp.data.model.City
 import com.project.weatherapp.data.model.LocationModel
 import com.project.weatherapp.data.model.Weather
 import com.project.weatherapp.data.source.remote.retrofit.PlaceSuggestionClient
 import com.project.weatherapp.data.source.repository.WeatherRepository
-import com.project.weatherapp.ui.home.HomeViewModel
-import com.project.weatherapp.ui.home.LAST_UPDATED_TIME
-import com.project.weatherapp.utils.*
+import com.project.weatherapp.utils.Result
+import com.project.weatherapp.utils.asLiveData
+import com.project.weatherapp.utils.convertKelvinToCelsius
+import com.project.weatherapp.utils.currentSystemTime
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.*
 
 class SearchViewModel(
     private val repository: WeatherRepository,
@@ -35,38 +27,38 @@ class SearchViewModel(
     val isLoading = _isLoading.asLiveData()
     private val _dataFetchState = MutableLiveData<Boolean>()
     val dataFetchState = _dataFetchState.asLiveData()
-    private val _locationModel=MutableLiveData<City>()
+    private val _locationModel=MutableLiveData<LocationModel>()
     val locationModel=_locationModel.asLiveData()
     private val _weather = MutableLiveData<Weather?>()
     val weather = _weather.asLiveData()
     private var _lastUpdatedTime = MutableLiveData<String>()
     val lastUpdatedTime = _lastUpdatedTime.asLiveData()
-    fun getClient() {
+    private fun getClient() {
         PlaceSuggestionClient.createPlaceClient(getApplication<WeatherApplication>())
     }
 
     fun onSearchCalled() {
         getClient()
-        val fields = listOf(Place.Field.NAME, Place.Field.ADDRESS)
+        val fields = listOf(Place.Field.LAT_LNG)
         val intent = Autocomplete.IntentBuilder(
             AutocompleteActivityMode.FULLSCREEN,
             fields
         ).setTypeFilter(TypeFilter.CITIES)
 
         _autoCompleteIntent.value = intent
+        _autoCompleteIntent.value = intent
     }
-    fun getCity(city:City){
-        _locationModel.value=city
+    fun getCoords(locationModel: LocationModel){
+        _locationModel.value=locationModel
     }
     fun getSearchWeather() {
         _isLoading.value = true
         viewModelScope.launch {
-            when (val result = repository.getSearchWeather(_locationModel.value!!.name)) {
+            when (val result = repository.getWeather(_locationModel.value!!,true)) {
                 is Result.Success -> {
                     _isLoading.value = false
                     if (result.data != null) {
                         _lastUpdatedTime.value=currentSystemTime()
-                        Log.d("Weather",result.data.toString())
                         val weather = result.data.apply {
                             this.networkWeatherCondition.temp =
                                 convertKelvinToCelsius(this.networkWeatherCondition.temp)
@@ -84,6 +76,7 @@ class SearchViewModel(
                     _dataFetchState.value = false
                 }
                 is Result.Loading -> _isLoading.postValue(true)
+                is Result.Error -> TODO()
             }
         }
     }

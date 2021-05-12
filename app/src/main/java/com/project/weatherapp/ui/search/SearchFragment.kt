@@ -16,6 +16,7 @@ import com.google.android.libraries.places.widget.Autocomplete
 import com.project.weatherapp.R
 import com.project.weatherapp.WeatherApplication
 import com.project.weatherapp.data.model.City
+import com.project.weatherapp.data.model.LocationModel
 import com.project.weatherapp.databinding.SearchFragmentBinding
 import com.project.weatherapp.utils.isNetworkConnected
 import com.project.weatherapp.utils.observeOnce
@@ -27,7 +28,7 @@ import java.util.*
 
 
 class SearchFragment : Fragment() {
-    private val AUTOCOMPLETE_REQUEST_CODE = 100
+    private val AUTOCOMPLETE_REQUEST_CODE = 1000
     lateinit var binding: SearchFragmentBinding
     private val viewModel by viewModels<SearchViewModel> {
         SearchViewModel.SearchFragmentViewModelFactory(
@@ -75,7 +76,7 @@ class SearchFragment : Fragment() {
             { weather ->
                 Log.d("Weather", weather.toString())
                 if (weather != null) {
-                    binding.tvPlace.text = weather!!.name
+                    binding.tvPlace.text = weather.name
                     binding.tvTemp.text = "${weather.networkWeatherCondition.temp}" + "\u2103"
                     //+ " \u2109" for fahrenheit
                     binding.tvWeatherDescription.text = weather.networkWeatherDescription[0].main
@@ -159,11 +160,9 @@ class SearchFragment : Fragment() {
         if (requestCode == AUTOCOMPLETE_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
                 val place = Autocomplete.getPlaceFromIntent(data!!)
-                val address = place.address
-                val country = address!!.substringAfterLast(",", " ")
-                Log.d("Places", country)
-                val city = City(place.name!!, country)
-                viewModel.getCity(city)
+                val locationModel=LocationModel(place.latLng!!.longitude,place.latLng!!.latitude)
+                Log.d("Places",locationModel.toString())
+                viewModel.getCoords(locationModel)
             } else if (resultCode == RESULT_CANCELED) {
                 // The user canceled the operation.
             }
