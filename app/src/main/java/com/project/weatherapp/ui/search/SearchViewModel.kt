@@ -2,6 +2,7 @@ package com.project.weatherapp.ui.search
 
 import android.app.Application
 import androidx.lifecycle.*
+import androidx.preference.PreferenceManager
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.model.TypeFilter
 import com.google.android.libraries.places.widget.Autocomplete
@@ -36,7 +37,12 @@ class SearchViewModel(
     private fun getClient() {
         PlaceSuggestionClient.createPlaceClient(getApplication<WeatherApplication>())
     }
-
+    val sPref = PreferenceManager.getDefaultSharedPreferences(getApplication())
+    private val _clicked = MutableLiveData<Boolean>()
+    val clicked= _clicked.asLiveData()
+    fun doneGettingPlace(){
+        _clicked.value=false
+    }
     fun onSearchCalled() {
         getClient()
         val fields = listOf(Place.Field.LAT_LNG)
@@ -44,8 +50,7 @@ class SearchViewModel(
             AutocompleteActivityMode.FULLSCREEN,
             fields
         ).setTypeFilter(TypeFilter.CITIES)
-
-        _autoCompleteIntent.value = intent
+        _clicked.value=true
         _autoCompleteIntent.value = intent
     }
     fun getCoords(locationModel: LocationModel){

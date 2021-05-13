@@ -4,34 +4,34 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.preference.PreferenceManager
 import com.google.android.material.snackbar.Snackbar
 import com.project.weatherapp.R
 import com.project.weatherapp.WeatherApplication
 import com.project.weatherapp.databinding.HomeFragmentBinding
+import com.project.weatherapp.ui.LOCATION_REQUEST_CODE
+import com.project.weatherapp.ui.settings.UNIT_SELECTED
 import com.project.weatherapp.utils.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 
 class HomeFragment : Fragment() {
 
     private var isGPSEnabled = false
-    private lateinit var prefs: SharedPreferenceHelper
     lateinit var binding: HomeFragmentBinding
     private val viewModel by viewModels<HomeViewModel> {
         HomeViewModel.HomeFragmentViewModelFactory(
@@ -42,8 +42,6 @@ class HomeFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        prefs = SharedPreferenceHelper.getInstance(requireContext())
-        Log.d("Condition",viewModel.firstTimeNoInternet.value.toString())
         GpsUtil(requireContext()).turnGPSOn(object : GpsUtil.OnGpsListener {
             override fun gpsStatus(isGPSEnabled: Boolean) {
                 this@HomeFragment.isGPSEnabled = isGPSEnabled
@@ -59,14 +57,22 @@ class HomeFragment : Fragment() {
         binding = HomeFragmentBinding.inflate(layoutInflater)
         viewModel.weather.observe(
             viewLifecycleOwner,
-            Observer { weather ->
+            { weather ->
+                binding.loadScreen.isVisible=false
+                binding.swipeToLoad.isVisible=true
                 binding.tvPlace.text = weather!!.name
-                binding.tvTemp.text = "${weather.networkWeatherCondition.temp}" + "\u2103"
-                //+ " \u2109" for fahrenheit
+                if(viewModel.sPref.getString(UNIT_SELECTED,"Metric")=="Metric"){
+                    binding.tvTemp.text = "${weather.networkWeatherCondition.temp}" + "\u2103"
+                    binding.tvWindSpeed.text = "${weather.wind.speed} m/s"
+                }
+                else{
+                    binding.tvTemp.text = "${convertCelsiusToFahrenheit(weather.networkWeatherCondition.temp)}" + "\u2109"
+                    binding.tvWindSpeed.text = "${converttoMilesPerHour(weather.wind.speed)} mph"
+                }
                 binding.tvWeatherDescription.text = weather.networkWeatherDescription[0].main
                 binding.tvHumidity.text = "${weather.networkWeatherCondition.humidity}%"
                 binding.tvPressure.text = "${weather.networkWeatherCondition.pressure.toInt()}hPa"
-                binding.tvWindSpeed.text = "${weather.wind.speed} m/s"
+
                 when (weather.networkWeatherDescription[0].icon) {
                     "01d" -> {
                         binding.weatherIcon.setIconResource(getString(R.string.wi_day_sunny))
@@ -127,7 +133,7 @@ class HomeFragment : Fragment() {
         )
         viewModel.lastUpdatedTime.observe(
             viewLifecycleOwner,
-            {time ->
+            { time ->
                 binding.tvCurrentTime.text = time
             }
         )
@@ -135,14 +141,12 @@ class HomeFragment : Fragment() {
             val workerScope = CoroutineScope(Dispatchers.Main)
             workerScope.launch {
                 delay(2000)
-                Log.d("Location","Called")
                 binding.swipeToLoad.isRefreshing = false
                 if (isNetworkConnected(requireActivity())) {
                     viewModel.getLocationLiveData().observeOnce(
                         viewLifecycleOwner,
                         {
                             viewModel.refreshWeather(it)
-                            viewModel.doneRefreshing()
                             binding.swipeToLoad.isRefreshing = false
                         }
                     )
@@ -168,33 +172,28 @@ class HomeFragment : Fragment() {
     private fun invokeLocationAction() {
         when {
             allPermissionsGranted() -> {
-
+                if (!isNetworkConnected(requireContext())) {
+                    val sPref = PreferenceManager.getDefaultSharedPreferences(requireContext())
+                    if (sPref.getString(LAST_UPDATED_TIME, "") == "") {
+                        AlertDialog.Builder(requireContext())
+                            .setTitle("No network")
+                            .setMessage("No offline weather is stored for the first time the app is launched")
+                            .setNegativeButton(
+                                "Ok "
+                            ) { dialog, which -> requireActivity().finishAffinity() }
+                            .show()
+                    }
+                }
                 viewModel.getLocationLiveData().observeOnce(
                     viewLifecycleOwner,
                     { location ->
                         if (location != null) {
-                            if(isNetworkConnected(requireContext())){
+                            if (isNetworkConnected(requireContext())) {
                                 viewModel.refreshWeather(location)
-                            }else{
+                                viewModel.doneRefreshing()
+                            } else {
                                 viewModel.getWeather(location)
                             }
-                        }
-                    }
-                )
-
-                viewModel.firstTimeNoInternet.observe(
-                    viewLifecycleOwner,
-                    {
-                        Log.d("CONDITION","condition")
-                        if (it) {
-                            AlertDialog.Builder(requireContext())
-                                .setTitle("No network")
-                                .setMessage("No offline weather is stored for the first time the app is launched")
-                                .setNegativeButton(
-                                    "Ok "
-                                ) { dialog, which -> requireActivity().finishAffinity() }
-                                .show()
-
                         }
                     }
                 )
@@ -205,7 +204,7 @@ class HomeFragment : Fragment() {
                     .setMessage("This application requires access to your location to function!")
                     .setNegativeButton(
                         "No"
-                    ) { _, _ -> requireActivity().finish() }
+                    ) { _, _ -> requireActivity().finishAffinity() }
                     .setPositiveButton(
                         "Ask me"
                     ) { _, _ ->
@@ -213,43 +212,31 @@ class HomeFragment : Fragment() {
                     }
                     .show()
             }
-
-            !isGPSEnabled -> {
-                Snackbar.make(
-                    binding.root,
-                    "GPS is required for this application to function!",
-                    Snackbar.LENGTH_SHORT
-                ).show()
-            }
-
-            else -> {
-                requestPermissions(REQUIRED_PERMISSIONS, LOCATION_REQUEST_CODE)
-            }
         }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
-            Activity.RESULT_OK -> {
-                when (requestCode) {
-                    GPS_REQUEST_CHECK_SETTINGS -> {
+            GPS_REQUEST_CHECK_SETTINGS -> {
+                when (resultCode) {
+                    Activity.RESULT_OK -> {
                         isGPSEnabled = true
+                        if(isNetworkConnected(requireContext())){
+                            binding.loadScreen.isVisible=true
+                        }
                         invokeLocationAction()
                     }
-                }
-            }
-
-            Activity.RESULT_CANCELED -> {
-                when (requestCode) {
-                    GPS_REQUEST_CHECK_SETTINGS -> {
-                        Snackbar.make(
-                            binding.root,
+                    Activity.RESULT_CANCELED -> {
+                        Toast.makeText(
+                            requireContext(),
                             "Enable your GPS and restart!",
-                            Snackbar.LENGTH_LONG
+                            Toast.LENGTH_LONG
                         ).show()
+                        requireActivity().finishAffinity()
                     }
                 }
+
             }
         }
     }
@@ -278,7 +265,6 @@ class HomeFragment : Fragment() {
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
         )
-        private const val LOCATION_REQUEST_CODE = 123
     }
 
 

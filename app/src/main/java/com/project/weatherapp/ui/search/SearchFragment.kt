@@ -5,26 +5,24 @@ import android.app.Activity.RESULT_CANCELED
 import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.Toast
-import androidx.lifecycle.Observer
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.google.android.libraries.places.widget.Autocomplete
 import com.project.weatherapp.R
 import com.project.weatherapp.WeatherApplication
-import com.project.weatherapp.data.model.City
 import com.project.weatherapp.data.model.LocationModel
 import com.project.weatherapp.databinding.SearchFragmentBinding
+import com.project.weatherapp.ui.settings.UNIT_SELECTED
+import com.project.weatherapp.utils.convertCelsiusToFahrenheit
+import com.project.weatherapp.utils.converttoMilesPerHour
 import com.project.weatherapp.utils.isNetworkConnected
-import com.project.weatherapp.utils.observeOnce
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.util.*
 
 
 class SearchFragment : Fragment() {
@@ -51,8 +49,11 @@ class SearchFragment : Fragment() {
         viewModel.autocompleteIntent.observe(
             viewLifecycleOwner,
             {
-                val intent = it.build(requireContext())
-                startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE)
+                if (viewModel.clicked.value!!) {
+                    val intent = it.build(requireContext())
+                    startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE)
+                    viewModel.doneGettingPlace()
+                }
             }
         )
         viewModel.lastUpdatedTime.observe(
@@ -65,85 +66,92 @@ class SearchFragment : Fragment() {
             val workerScope = CoroutineScope(Dispatchers.Main)
             workerScope.launch {
                 delay(2000)
-                viewModel.getSearchWeather()
-                viewModel.doneRefreshing()
                 binding.swipeToLoad.isRefreshing = false
+                if(isNetworkConnected(requireActivity())){
+                    viewModel.getSearchWeather()
+                    viewModel.doneRefreshing()
+                } else {
+                    Toast.makeText(
+                        requireContext(),
+                        "No internet connection.Pls try again later!!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    binding.swipeToLoad.isRefreshing = false
+                }
             }
         }
         viewModel.weather.observe(
             viewLifecycleOwner,
-            Observer
             { weather ->
-                Log.d("Weather", weather.toString())
-                if (weather != null) {
-                    binding.tvPlace.text = weather.name
+                binding.noInternetMessage.isVisible=false
+                binding.tvPlace.text = weather!!.name
+                if(viewModel.sPref.getString(UNIT_SELECTED,"Metric")=="Metric"){
                     binding.tvTemp.text = "${weather.networkWeatherCondition.temp}" + "\u2103"
-                    //+ " \u2109" for fahrenheit
-                    binding.tvWeatherDescription.text = weather.networkWeatherDescription[0].main
-                    binding.tvHumidity.text = "${weather.networkWeatherCondition.humidity}%"
-                    binding.tvPressure.text =
-                        "${weather.networkWeatherCondition.pressure.toInt()}hPa"
                     binding.tvWindSpeed.text = "${weather.wind.speed} m/s"
-                    when (weather.networkWeatherDescription[0].icon) {
-                        "01d" -> {
-                            binding.weatherIcon.setIconResource(getString(R.string.wi_day_sunny))
-                        }
-                        "01n" -> {
-                            binding.weatherIcon.setIconResource(getString(R.string.wi_night_clear))
-                        }
-                        "02d" -> {
-                            binding.weatherIcon.setIconResource(getString(R.string.wi_day_cloudy))
-                        }
-                        "02n" -> {
-                            binding.weatherIcon.setIconResource(getString(R.string.wi_night_alt_cloudy))
-                        }
-                        "03d" -> {
-                            binding.weatherIcon.setIconResource(getString(R.string.wi_cloud))
-                        }
-                        "03n" -> {
-                            binding.weatherIcon.setIconResource(getString(R.string.wi_cloud))
-                        }
-                        "04d" -> {
-                            binding.weatherIcon.setIconResource(getString(R.string.wi_cloudy))
-                        }
-                        "04n" -> {
-                            binding.weatherIcon.setIconResource(getString(R.string.wi_cloudy))
-                        }
-                        "09d" -> {
-                            binding.weatherIcon.setIconResource(getString(R.string.wi_showers))
-                        }
-                        "09n" -> {
-                            binding.weatherIcon.setIconResource(getString(R.string.wi_showers))
-                        }
-                        "10d" -> {
-                            binding.weatherIcon.setIconResource(getString(R.string.wi_day_rain_mix))
-                        }
-                        "10n" -> {
-                            binding.weatherIcon.setIconResource(getString(R.string.wi_night_rain_mix))
-                        }
-                        "11d" -> {
-                            binding.weatherIcon.setIconResource(getString(R.string.wi_thunderstorm))
-                        }
-                        "11n" -> {
-                            binding.weatherIcon.setIconResource(getString(R.string.wi_thunderstorm))
-                        }
-                        "13d" -> {
-                            binding.weatherIcon.setIconResource(getString(R.string.wi_snow))
-                        }
-                        "13n" -> {
-                            binding.weatherIcon.setIconResource(getString(R.string.wi_snow))
-                        }
-                        "50d" -> {
-                            binding.weatherIcon.setIconResource(getString(R.string.wi_dust))
-                        }
-                        "50n" -> {
-                            binding.weatherIcon.setIconResource(getString(R.string.wi_dust))
-                        }
+                }
+                else{
+                    binding.tvTemp.text = "${convertCelsiusToFahrenheit(weather.networkWeatherCondition.temp)}" + "\u2109"
+                    binding.tvWindSpeed.text = "${converttoMilesPerHour(weather.wind.speed)} mph"
+                }
+                binding.tvWeatherDescription.text = weather.networkWeatherDescription[0].main
+                binding.tvHumidity.text = "${weather.networkWeatherCondition.humidity}%"
+                binding.tvPressure.text =
+                    "${weather.networkWeatherCondition.pressure.toInt()}hPa"
+                when (weather.networkWeatherDescription[0].icon) {
+                    "01d" -> {
+                        binding.weatherIcon.setIconResource(getString(R.string.wi_day_sunny))
                     }
-                } else {
-                    binding.swipeToLoad.isVisible=false
-                    binding.initialMessage.isVisible=true
-                    Toast.makeText(requireContext(),"Sorry but OpenWeather API and Google Places dont have the same spelling",Toast.LENGTH_LONG).show()
+                    "01n" -> {
+                        binding.weatherIcon.setIconResource(getString(R.string.wi_night_clear))
+                    }
+                    "02d" -> {
+                        binding.weatherIcon.setIconResource(getString(R.string.wi_day_cloudy))
+                    }
+                    "02n" -> {
+                        binding.weatherIcon.setIconResource(getString(R.string.wi_night_alt_cloudy))
+                    }
+                    "03d" -> {
+                        binding.weatherIcon.setIconResource(getString(R.string.wi_cloud))
+                    }
+                    "03n" -> {
+                        binding.weatherIcon.setIconResource(getString(R.string.wi_cloud))
+                    }
+                    "04d" -> {
+                        binding.weatherIcon.setIconResource(getString(R.string.wi_cloudy))
+                    }
+                    "04n" -> {
+                        binding.weatherIcon.setIconResource(getString(R.string.wi_cloudy))
+                    }
+                    "09d" -> {
+                        binding.weatherIcon.setIconResource(getString(R.string.wi_showers))
+                    }
+                    "09n" -> {
+                        binding.weatherIcon.setIconResource(getString(R.string.wi_showers))
+                    }
+                    "10d" -> {
+                        binding.weatherIcon.setIconResource(getString(R.string.wi_day_rain_mix))
+                    }
+                    "10n" -> {
+                        binding.weatherIcon.setIconResource(getString(R.string.wi_night_rain_mix))
+                    }
+                    "11d" -> {
+                        binding.weatherIcon.setIconResource(getString(R.string.wi_thunderstorm))
+                    }
+                    "11n" -> {
+                        binding.weatherIcon.setIconResource(getString(R.string.wi_thunderstorm))
+                    }
+                    "13d" -> {
+                        binding.weatherIcon.setIconResource(getString(R.string.wi_snow))
+                    }
+                    "13n" -> {
+                        binding.weatherIcon.setIconResource(getString(R.string.wi_snow))
+                    }
+                    "50d" -> {
+                        binding.weatherIcon.setIconResource(getString(R.string.wi_dust))
+                    }
+                    "50n" -> {
+                        binding.weatherIcon.setIconResource(getString(R.string.wi_dust))
+                    }
                 }
             }
         )
@@ -159,12 +167,14 @@ class SearchFragment : Fragment() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == AUTOCOMPLETE_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
+                binding.initialMessage.isVisible = false
+                binding.swipeToLoad.isVisible = true
                 val place = Autocomplete.getPlaceFromIntent(data!!)
-                val locationModel=LocationModel(place.latLng!!.longitude,place.latLng!!.latitude)
-                Log.d("Places",locationModel.toString())
+                val locationModel = LocationModel(place.latLng!!.longitude, place.latLng!!.latitude)
                 viewModel.getCoords(locationModel)
             } else if (resultCode == RESULT_CANCELED) {
-                // The user canceled the operation.
+                binding.swipeToLoad.isVisible=false
+                binding.initialMessage.isVisible=true
             }
         }
     }
@@ -178,9 +188,6 @@ class SearchFragment : Fragment() {
         if (isNetworkConnected(requireContext())) {
             when (item.itemId) {
                 R.id.search -> {
-                    Log.d("Clicked", "Clicked")
-                    binding.initialMessage.isVisible = false
-                    binding.swipeToLoad.isVisible = true
                     viewModel.onSearchCalled()
                     return true
                 }

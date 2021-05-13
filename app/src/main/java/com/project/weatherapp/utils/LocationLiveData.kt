@@ -11,12 +11,10 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.gson.Gson
 import com.project.weatherapp.data.model.LocationModel
-import com.project.weatherapp.ui.home.HomeViewModel
 import com.project.weatherapp.ui.settings.IS_CURRENT_LOCATION
 import com.project.weatherapp.ui.settings.LOCATION_MODEL
 
 class LocationLiveData(context: Context) : LiveData<LocationModel>() {
-
     private var fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
     private val sPref = PreferenceManager.getDefaultSharedPreferences(context)
     override fun onInactive() {

@@ -20,7 +20,23 @@ fun convertKelvinToCelsius(number: Number): Double {
         parse(format(number.toDouble().minus(273))).toDouble()
     }
 }
+fun converttoMilesPerHour(number: Number):Double{
+    return DecimalFormat().run{
+        applyPattern(".#")
+        var numberDouble=number.toDouble()
+        numberDouble *= 2.237
+        parse(format(numberDouble)).toDouble()
+    }
 
+}
+fun convertCelsiusToFahrenheit(number: Number): Double {
+    return DecimalFormat().run {
+        applyPattern(".##")
+        var numberDouble=number.toDouble()
+        numberDouble=((numberDouble*9)/5)+32
+        parse(format(numberDouble)).toDouble()
+    }
+}
 inline fun <T : View> T.showIf(condition: (T) -> Boolean) {
     visibility = if (condition(this)) {
         View.VISIBLE

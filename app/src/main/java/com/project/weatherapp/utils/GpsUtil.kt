@@ -36,8 +36,8 @@ class GpsUtil(private val context: Context) {
                 .addOnSuccessListener(context as Activity) {
                     OnGpsListener?.gpsStatus(true)
                 }.addOnFailureListener {
+                    OnGpsListener?.gpsStatus(true)
                 }.addOnFailureListener(context) { exception ->
-
                     when ((exception as ApiException).statusCode) {
                         LocationSettingsStatusCodes.RESOLUTION_REQUIRED -> {
                             try {
@@ -53,7 +53,6 @@ class GpsUtil(private val context: Context) {
                         LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE -> {
                             val errorMessage =
                                 "Location settings are inadequate, and cannot be " + "fixed here. Fix in Settings."
-
                             Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
                         }
                     }

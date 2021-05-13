@@ -3,10 +3,7 @@ package com.project.weatherapp.ui.settings
 import android.app.Application
 import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.*
 import androidx.preference.PreferenceManager
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.model.TypeFilter
@@ -19,6 +16,7 @@ import com.project.weatherapp.data.source.remote.retrofit.PlaceSuggestionClient
 import com.project.weatherapp.data.source.repository.WeatherRepository
 import com.project.weatherapp.ui.home.HomeViewModel
 import com.project.weatherapp.utils.asLiveData
+import com.project.weatherapp.utils.isNetworkConnected
 
 const val IS_CURRENT_LOCATION = "isCurrentLocation"
 const val IS_LOCATION_SET = "isLocationSet"
@@ -40,12 +38,16 @@ class SettingsViewModel(
     fun doneGettingPlace(){
         _clicked.value=false
     }
+    private val _isNetworkConnected= MutableLiveData(isNetworkConnected(getApplication<WeatherApplication>()))
+    val isNetworkConnected:LiveData<Boolean>
+        get()=_isNetworkConnected
+
     private fun getClient() {
         PlaceSuggestionClient.createPlaceClient(getApplication<WeatherApplication>())
     }
 
     fun onLocationDisabled(newValue: Boolean) {
-        if (newValue == false) {
+        if (!newValue) {
             sPref.edit().putBoolean(IS_CURRENT_LOCATION, newValue).apply()
             sPref.edit().putBoolean(IS_LOCATION_SET, false).apply()
         } else {
@@ -54,7 +56,6 @@ class SettingsViewModel(
             sPref.edit().putString(LOCATION_MODEL,"").apply()
         }
     }
-
     fun onSearchCalled() {
         val currentLocation=sPref.getBoolean(IS_CURRENT_LOCATION,true)
         if(!currentLocation){
