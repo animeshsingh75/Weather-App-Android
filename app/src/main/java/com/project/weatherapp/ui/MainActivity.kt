@@ -19,10 +19,11 @@ import com.project.weatherapp.ui.search.SearchFragment
 import com.project.weatherapp.ui.settings.IS_CURRENT_LOCATION
 import com.project.weatherapp.ui.settings.IS_LOCATION_SET
 import com.project.weatherapp.ui.settings.SettingsFragment
+import com.shrikanthravi.collapsiblecalendarview.widget.CollapsibleCalendar
 
 const val LOCATION_REQUEST_CODE = 123
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(){
     lateinit var binding: ActivityMainBinding
     lateinit var sPref: SharedPreferences
     private val REQUIRED_PERMISSIONS = arrayOf(
@@ -103,6 +104,11 @@ class MainActivity : AppCompatActivity() {
                     .show()
             }
         }
+    }
+
+    override fun onBackPressed() {
+        finishAffinity()
+        super.onBackPressed()
     }
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED

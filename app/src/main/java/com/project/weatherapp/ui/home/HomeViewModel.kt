@@ -1,12 +1,14 @@
 package com.project.weatherapp.ui.home
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.*
 import androidx.preference.PreferenceManager
 import com.project.weatherapp.WeatherApplication
 import com.project.weatherapp.data.model.LocationModel
 import com.project.weatherapp.data.model.Weather
 import com.project.weatherapp.data.source.repository.WeatherRepository
+import com.project.weatherapp.ui.forecast.CITY_ID
 import com.project.weatherapp.ui.settings.UNIT_SELECTED
 import com.project.weatherapp.utils.*
 import kotlinx.coroutines.Dispatchers
@@ -41,6 +43,8 @@ class HomeViewModel(
                     _isLoading.value = false
                     if (result.data != null) {
                         val weather = result.data
+                        sPref.edit().putInt(CITY_ID,weather.cityId).apply()
+                        Log.d("Weather",sPref.getInt(CITY_ID,0).toString())
                         _dataFetchState.value = true
                         _weather.value = weather
                         if (isNetworkConnected(getApplication<WeatherApplication>())) {
@@ -85,11 +89,12 @@ class HomeViewModel(
                             }
 
                         }
-                        val sPref = PreferenceManager.getDefaultSharedPreferences(getApplication())
                         _lastUpdatedTime.value = currentSystemTime()
                         sPref.edit().putString(LAST_UPDATED_TIME, _lastUpdatedTime.value).apply()
                         _dataFetchState.value = true
                         _weather.value = weather
+                        sPref.edit().putInt(CITY_ID,weather.cityId).apply()
+                        Log.d("Weather",sPref.getInt(CITY_ID,0).toString())
                         repository.deleteWeatherData()
                         repository.storeWeatherData(weather)
                     } else {

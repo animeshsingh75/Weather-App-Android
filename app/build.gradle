@@ -82,7 +82,7 @@ dependencies {
 
     implementation 'com.github.pwittchen:weathericonview:1.1.0'
 
-    implementation "com.github.shrikanth7698:Collapsible-Calendar-View-Android:$calendarVersion"
+    implementation project(':collapsiblecalendarview')
 
     implementation "com.google.android.gms:play-services-location:$googlePlayLocation"
 
@@ -96,6 +96,8 @@ dependencies {
     implementation "com.github.skydoves:elasticviews:$elastic_version"
 
     implementation 'com.google.android.libraries.places:places:2.4.0'
+
+    implementation 'androidx.recyclerview:recyclerview:1.2.0'
 
     implementation "androidx.work:work-runtime-ktx:2.6.0-alpha02"
     testImplementation 'junit:junit:4.13.2'

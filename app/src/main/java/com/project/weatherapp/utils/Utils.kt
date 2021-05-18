@@ -95,3 +95,10 @@ fun currentSystemTime(): String {
     val dateFormat = SimpleDateFormat("EEEE MMM d, hh:mm aaa")
     return dateFormat.format(date)
 }
+
+fun convertToDate(time:Long): String {
+    val timeChanged=time/10000
+    val date = Date(timeChanged)
+    val dateFormat = SimpleDateFormat("YYYY-MM-dd")
+    return dateFormat.format(date)
+}

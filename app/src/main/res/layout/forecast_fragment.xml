@@ -1,13 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".ui.forecast.ForecastFragment">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="Forecast Fragment" />
 
-</FrameLayout>
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeToLoad"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <TextView
+                android:id="@+id/noForecast"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="22sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/collapsibleCalendarView" />
+            <com.shrikanthravi.collapsiblecalendarview.widget.CollapsibleCalendar
+                android:id="@+id/collapsibleCalendarView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:buttonLeft_drawableTintColor="@android:color/white"
+                app:buttonRight_drawableTintColor="@android:color/white"
+                app:eventColor="@android:color/white"
+                app:expandIconColor="@android:color/white"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:primaryColor="@color/primaryColor"
+                app:selectedItem_background="@drawable/circle_white_solid_background"
+                app:selectedItem_textColor="@color/google_red"
+                app:textColor="@android:color/white"
+                app:todayItem_background="@drawable/circle_white_stroke_background"
+                app:todayItem_textColor="@android:color/white" />
+
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/forecastRv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/collapsibleCalendarView"
+                app:layout_constraintVertical_bias="0.0"
+                tools:listitem="@layout/list_item_forecast" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
