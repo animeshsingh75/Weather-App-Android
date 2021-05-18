@@ -20,7 +20,8 @@ class ForecastViewModel (
     application: Application
 ): AndroidViewModel(application) {
     val list = arrayListOf<WeatherForecast>()
-    val mutableList=MutableLiveData<List<WeatherForecast>?>()
+    private val locationLiveData = LocationLiveData(application)
+    fun getLocationLiveData() = locationLiveData
     private val _noForecastText=MutableLiveData<String>()
     val noForecastText=_noForecastText.asLiveData()
     private val _weatherForecast = MutableLiveData<List<WeatherForecast>?>()
@@ -34,12 +35,10 @@ class ForecastViewModel (
     val isResetList=_isResetList.asLiveData()
     private val _dataFetchState = MutableLiveData<Boolean>()
     val dataFetchState = _dataFetchState.asLiveData()
-    val sPref = PreferenceManager.getDefaultSharedPreferences(getApplication())
-    fun getForecastWeather() {
+    fun getForecastWeather(location: LocationModel) {
         _isLoading.postValue(true)
         GlobalScope.launch(Dispatchers.Main) {
-            val cityId = sPref.getInt(CITY_ID, 0)
-            when (val result = repository.getForecastWeather(cityId, false)) {
+            when (val result = repository.getForecastWeather(location, false)) {
                 is Result.Success -> {
                     _isLoading.value = false
                     if (result.data != null) {
@@ -48,7 +47,7 @@ class ForecastViewModel (
                         _dataFetchState.value = true
                         _weatherForecast.value = forecast
                     } else {
-                        refreshWeatherForecast()
+                        refreshWeatherForecast(location)
                     }
                 }
                 is Error -> {
@@ -65,7 +64,7 @@ class ForecastViewModel (
         if (firstTime) {
             firstTime = false
         }
-        month = if (day!!.month + 1 < 10) {
+        month = if (day.month + 1 < 10) {
             "0${day.month + 1}"
         } else {
             "${day.month + 1}"
@@ -93,16 +92,16 @@ class ForecastViewModel (
         list.clear()
         list.addAll(weatherForecast.value!!)
     }
-    fun refreshWeatherForecast() {
+    fun refreshWeatherForecast(location: LocationModel) {
         Log.d("Here","Here")
         _isLoading.value = true
-        val cityId = sPref.getInt(CITY_ID, 0)
-        viewModelScope.launch {
-            when (val result = repository.getForecastWeather(cityId, true)) {
+        GlobalScope.launch(Dispatchers.Main) {
+            when (val result = repository.getForecastWeather(location, true)) {
                 is Result.Success -> {
                     _isLoading.value = false
                     if (result.data != null) {
                         val forecast = result.data
+                        Log.d("Location",location.toString())
                         _dataFetchState.value = true
                         _weatherForecast.value = forecast
                         repository.deleteForecastData()

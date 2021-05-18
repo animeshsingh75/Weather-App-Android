@@ -54,12 +54,12 @@ class WeatherRepositoryImpl(
         }
 
     override suspend fun getForecastWeather(
-        cityId: Int,
+        location: LocationModel,
         refresh: Boolean
     ): Result<List<WeatherForecast>?> = withContext(ioDispatcher) {
         if (refresh) {
             val mapper = WeatherForecastMapperRemote()
-            when (val response = remoteDataSource.getWeatherForecast(cityId)) {
+            when (val response = remoteDataSource.getWeatherForecast(location)) {
                 is Result.Success -> {
                     if (response.data != null) {
                         Result.Success(mapper.transformToDomain(response.data))

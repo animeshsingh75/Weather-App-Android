@@ -43,8 +43,6 @@ class HomeViewModel(
                     _isLoading.value = false
                     if (result.data != null) {
                         val weather = result.data
-                        sPref.edit().putInt(CITY_ID,weather.cityId).apply()
-                        Log.d("Weather",sPref.getInt(CITY_ID,0).toString())
                         _dataFetchState.value = true
                         _weather.value = weather
                         if (isNetworkConnected(getApplication<WeatherApplication>())) {
@@ -93,8 +91,6 @@ class HomeViewModel(
                         sPref.edit().putString(LAST_UPDATED_TIME, _lastUpdatedTime.value).apply()
                         _dataFetchState.value = true
                         _weather.value = weather
-                        sPref.edit().putInt(CITY_ID,weather.cityId).apply()
-                        Log.d("Weather",sPref.getInt(CITY_ID,0).toString())
                         repository.deleteWeatherData()
                         repository.storeWeatherData(weather)
                     } else {

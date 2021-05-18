@@ -46,19 +46,29 @@ class ForecastFragment : Fragment() {
     ): View? {
         val adapter = ForecastAdapter(viewModel.list)
         binding = ForecastFragmentBinding.inflate(layoutInflater)
-        if (isNetworkConnected(requireContext())) {
-            viewModel.refreshWeatherForecast()
-        } else {
-            viewModel.getForecastWeather()
-        }
+        viewModel.getLocationLiveData().observeOnce(
+            viewLifecycleOwner,
+            {
+                if (isNetworkConnected(requireContext())) {
+                    viewModel.refreshWeatherForecast(it)
+                } else {
+                    viewModel.getForecastWeather(it)
+                }
+            }
+        )
         binding.swipeToLoad.setOnRefreshListener {
             val workerScope = CoroutineScope(Dispatchers.Main)
             workerScope.launch {
                 delay(2000)
                 binding.swipeToLoad.isRefreshing = false
                 if (isNetworkConnected(requireActivity())) {
-                    viewModel.refreshWeatherForecast()
-                    binding.swipeToLoad.isRefreshing = false
+                    viewModel.getLocationLiveData().observeOnce(
+                        viewLifecycleOwner,
+                        {
+                            viewModel.refreshWeatherForecast(it)
+                            binding.swipeToLoad.isRefreshing = false
+                        }
+                    )
                 } else {
                     Toast.makeText(
                         requireContext(),

@@ -32,10 +32,10 @@ class WeatherRemoteDataSourceImpl(
             }
         }
 
-    override suspend fun getWeatherForecast(cityId: Int): Result<List<NetworkWeatherForecast>> =
+    override suspend fun getWeatherForecast(location: LocationModel): Result<List<NetworkWeatherForecast>> =
         withContext(ioDispatcher) {
             return@withContext try {
-                val result = retrofitClient.getWeatherForecast(cityId, BuildConfig.API_KEY)
+                val result = retrofitClient.getWeatherForecast(location.latitude,location.longitude, BuildConfig.API_KEY)
                 if (result.isSuccessful) {
                     val networkWeatherForecast = result.body()?.weathers
                     Result.Success(networkWeatherForecast)

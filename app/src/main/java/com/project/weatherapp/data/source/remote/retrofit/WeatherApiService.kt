@@ -24,7 +24,8 @@ interface WeatherApiService {
 
     @GET("data/2.5/forecast")
     suspend fun getWeatherForecast(
-        @Query("id") cityId: Int,
+        @Query("lat") latitude: Double,
+        @Query("lon") longitude: Double,
         @Query("appid") apiKey: String
     ): Response<NetworkWeatherForecastResponse>
 }

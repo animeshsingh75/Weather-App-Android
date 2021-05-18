@@ -9,7 +9,7 @@ interface WeatherRepository {
 
     suspend fun getWeather(location: LocationModel, refresh: Boolean): Result<Weather?>
 
-    suspend fun getForecastWeather(cityId: Int, refresh: Boolean): Result<List<WeatherForecast>?>
+    suspend fun getForecastWeather(location: LocationModel, refresh: Boolean): Result<List<WeatherForecast>?>
 
     suspend fun getSearchWeather(location: String): Result<Weather?>
 
