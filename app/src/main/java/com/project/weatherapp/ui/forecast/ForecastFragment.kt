@@ -5,12 +5,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.OvershootInterpolator
 import android.widget.AbsListView
 import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.project.weatherapp.WeatherApplication
 import com.project.weatherapp.databinding.ForecastFragmentBinding
 import com.project.weatherapp.ui.forecast.adapter.ForecastAdapter
@@ -18,6 +20,9 @@ import com.project.weatherapp.utils.isNetworkConnected
 import com.project.weatherapp.utils.observeOnce
 import com.shrikanthravi.collapsiblecalendarview.data.Day
 import com.shrikanthravi.collapsiblecalendarview.widget.CollapsibleCalendar
+import jp.wasabeef.recyclerview.adapters.*
+import jp.wasabeef.recyclerview.animators.FadeInAnimator
+import jp.wasabeef.recyclerview.animators.SlideInLeftAnimator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -153,7 +158,11 @@ class ForecastFragment : Fragment() {
         )
 
         binding.forecastRv.layoutManager = LinearLayoutManager(activity)
-        binding.forecastRv.adapter = adapter
+        binding.forecastRv.adapter = ScaleInAnimationAdapter(adapter).apply {
+            setFirstOnly(false)
+            setDuration(500)
+            setInterpolator(OvershootInterpolator(.5f))
+        }
         binding.forecastRv.isNestedScrollingEnabled = false
         return binding.root
     }

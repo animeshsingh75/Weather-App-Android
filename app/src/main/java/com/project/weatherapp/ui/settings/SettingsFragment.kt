@@ -69,7 +69,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val useDeviceLocation = findPreference<SwitchPreference>("USE_DEVICE_LOCATION")
         useDeviceLocation!!.setOnPreferenceClickListener {
             if (! isNetworkConnected(requireContext())) {
-                useDeviceLocation.isChecked = true
+                useDeviceLocation.isChecked = sPref.getBoolean(IS_CURRENT_LOCATION,true)
                 Toast.makeText(
                     requireContext(),
                     "No internet connection.Pls try again later!!",

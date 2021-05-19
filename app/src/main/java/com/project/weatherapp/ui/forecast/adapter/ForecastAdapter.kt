@@ -11,10 +11,7 @@ import com.github.pwittchen.weathericonview.WeatherIconView
 import com.project.weatherapp.R
 import com.project.weatherapp.data.model.WeatherForecast
 import com.project.weatherapp.ui.settings.UNIT_SELECTED
-import com.project.weatherapp.utils.capitalizeEachLetter
-import com.project.weatherapp.utils.convertCelsiusToFahrenheit
-import com.project.weatherapp.utils.convertKelvinToCelsius
-import com.project.weatherapp.utils.converttoMilesPerHour
+import com.project.weatherapp.utils.*
 
 class ForecastAdapter(val data:List<WeatherForecast>): RecyclerView.Adapter<ForecastViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ForecastViewHolder =
@@ -37,11 +34,12 @@ class ForecastViewHolder(itemView:View):RecyclerView.ViewHolder(itemView) {
         val tvHumidity=findViewById<TextView>(R.id.tvHumidity)
         val tvPressure=findViewById<TextView>(R.id.tvPressure)
         val tvWindSpeed=findViewById<TextView>(R.id.tvWindSpeed)
+        val tvDate=findViewById<TextView>(R.id.tvDate)
         val weatherIcon=findViewById<WeatherIconView>(R.id.weatherIcon)
         val sPref = PreferenceManager.getDefaultSharedPreferences(context)
         if (sPref.getString(UNIT_SELECTED, "Metric") == "Metric") {
             tempTv.text = "${convertKelvinToCelsius(item.networkWeatherCondition.temp)}" + "\u2103"
-            tvWindSpeed.text = "${item.wind.speed} m/s"
+            tvWindSpeed.text = "${convertToOneDecimal(item.wind.speed)} m/s"
         } else {
             tempTv.text =
                 "${convertCelsiusToFahrenheit(convertKelvinToCelsius(item.networkWeatherCondition.temp))}" + "\u2109"
@@ -49,8 +47,9 @@ class ForecastViewHolder(itemView:View):RecyclerView.ViewHolder(itemView) {
         }
         tvMain.text=item.networkWeatherDescription[0].main
         tvWeatherDescription.text= capitalizeEachLetter(item.networkWeatherDescription[0].description!!)
-        tvHumidity.text = "${item.networkWeatherCondition.humidity.toInt()}%"
-        tvPressure.text = "${item.networkWeatherCondition.pressure.toInt()}hPa"
+        tvHumidity.text = "${item.networkWeatherCondition.humidity.toInt()} %"
+        tvPressure.text = "${item.networkWeatherCondition.pressure.toInt()} hPa"
+        tvDate.text=item.date
         when (item.networkWeatherDescription[0].icon) {
             "01d" -> {
                 weatherIcon.setIconResource(resources.getString(R.string.wi_day_sunny))

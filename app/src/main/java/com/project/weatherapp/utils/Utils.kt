@@ -26,6 +26,9 @@ fun convertKelvinToCelsius(number: Number): Double {
         parse(format(number.toDouble().minus(273))).toDouble()
     }
 }
+fun convertToOneDecimal(number: Double):String{
+   return String.format("%.1f", number)
+}
 fun converttoMilesPerHour(number: Number):Double{
     return DecimalFormat().run{
         applyPattern(".#")
