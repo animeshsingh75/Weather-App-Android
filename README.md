@@ -1,24 +1,22 @@
-<h1 align="center">Weathr App Android</h1>
-<h3 align="center">Introduction</h3>
-<p><b>2-3 Lines of Introduction
+<h1 align="center">Weather App Android</h1>
+<h3 align="center">It shows the weather and even the forecast for the next 5 days and even important details like humidity, wind speed, pressure, etc. You can select your location by gps or by searching any city</h3>
+<p><b>This app is designed using <i>MVVM</i> architectural design pattern and the weather and the forecast JSON values are taken from <i>Open Weather API</i> and even <i>Places Autocomplete API</i> is used to give autocomplete suggestions to the user. The user can choose the  units either in metric or imperial form. By default the home fragment shows the weather of the user's current location but can be changed by navigating to the settings fragment.
  <br/></b></p>
 
 <h2 align="center">Table of contents </h2>
 
-* <a href="#pagesorfeaturesorcomponents">Pages </a>
-* <a href="#tech-and-framework-used">Tech and framework used </a>
+* <a href="#tech-frameworks-and-libraries-used">Tech and framework used </a>
 * <a href="#link-to-the-project ">Link to the project  </a>
-* <a href="#api-libraries-used ">API  </a>
+* <a href="#apis-used ">API  </a>
 * <a href="#screenshots">Screenshots </a>
 
-## Pages or Features or Components
-__Explain the project in further detail it can either the pages or the feature of the project or even the various components of the page
 
  ## Tech,frameworks and libraries used
 * Kotlin
 * MVVM
 * Collapsible Calendar View
 * Weather Icon View
+* Recyclerview Animators
 
 ## APIs Used(If any)
 * Open Weather API
