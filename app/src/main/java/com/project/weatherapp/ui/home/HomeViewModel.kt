@@ -8,7 +8,6 @@ import com.project.weatherapp.WeatherApplication
 import com.project.weatherapp.data.model.LocationModel
 import com.project.weatherapp.data.model.Weather
 import com.project.weatherapp.data.source.repository.WeatherRepository
-import com.project.weatherapp.ui.forecast.CITY_ID
 import com.project.weatherapp.ui.settings.UNIT_SELECTED
 import com.project.weatherapp.utils.*
 import kotlinx.coroutines.Dispatchers

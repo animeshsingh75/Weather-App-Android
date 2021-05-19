@@ -7,8 +7,6 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.os.Handler
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,9 +15,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.preference.PreferenceManager
-import com.google.android.material.snackbar.Snackbar
 import com.project.weatherapp.R
 import com.project.weatherapp.WeatherApplication
 import com.project.weatherapp.databinding.HomeFragmentBinding
@@ -58,15 +54,15 @@ class HomeFragment : Fragment() {
         viewModel.weather.observe(
             viewLifecycleOwner,
             { weather ->
-                binding.loadScreen.isVisible=false
-                binding.swipeToLoad.isVisible=true
+                binding.loadScreen.isVisible = false
+                binding.swipeToLoad.isVisible = true
                 binding.tvPlace.text = weather!!.name
-                if(viewModel.sPref.getString(UNIT_SELECTED,"Metric")=="Metric"){
+                if (viewModel.sPref.getString(UNIT_SELECTED, "Metric") == "Metric") {
                     binding.tvTemp.text = "${weather.networkWeatherCondition.temp}" + "\u2103"
                     binding.tvWindSpeed.text = "${weather.wind.speed} m/s"
-                }
-                else{
-                    binding.tvTemp.text = "${convertCelsiusToFahrenheit(weather.networkWeatherCondition.temp)}" + "\u2109"
+                } else {
+                    binding.tvTemp.text =
+                        "${convertCelsiusToFahrenheit(weather.networkWeatherCondition.temp)}" + "\u2109"
                     binding.tvWindSpeed.text = "${converttoMilesPerHour(weather.wind.speed)} mph"
                 }
                 binding.tvWeatherDescription.text = weather.networkWeatherDescription[0].main
@@ -222,8 +218,8 @@ class HomeFragment : Fragment() {
                 when (resultCode) {
                     Activity.RESULT_OK -> {
                         isGPSEnabled = true
-                        if(isNetworkConnected(requireContext())){
-                            binding.loadScreen.isVisible=true
+                        if (isNetworkConnected(requireContext())) {
+                            binding.loadScreen.isVisible = true
                         }
                         invokeLocationAction()
                     }

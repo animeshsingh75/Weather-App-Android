@@ -2,24 +2,21 @@ package com.project.weatherapp.ui.forecast
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AbsListView
 import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.project.weatherapp.WeatherApplication
-import com.project.weatherapp.data.model.WeatherForecast
 import com.project.weatherapp.databinding.ForecastFragmentBinding
 import com.project.weatherapp.ui.forecast.adapter.ForecastAdapter
 import com.project.weatherapp.utils.isNetworkConnected
 import com.project.weatherapp.utils.observeOnce
 import com.shrikanthravi.collapsiblecalendarview.data.Day
-import com.shrikanthravi.collapsiblecalendarview.view.OnSwipeTouchListener
 import com.shrikanthravi.collapsiblecalendarview.widget.CollapsibleCalendar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +25,7 @@ import kotlinx.coroutines.launch
 import java.util.*
 
 
-const val CITY_ID = "cityId"
+
 
 class ForecastFragment : Fragment() {
     lateinit var binding: ForecastFragmentBinding

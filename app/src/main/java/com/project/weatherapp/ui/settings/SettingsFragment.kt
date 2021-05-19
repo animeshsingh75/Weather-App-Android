@@ -86,7 +86,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     if (changedValue) {
                         Toast.makeText(
                             requireContext(),
-                            "Please refresh your home and forecast screen to update results",
+                            "Please refresh your home and forecast tab to update results",
                             Toast.LENGTH_LONG
                         ).show()
                     }
@@ -104,7 +104,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 viewModel.getCoords(locationModel)
                 Toast.makeText(
                     requireContext(),
-                    "Please refresh your home screen to update results",
+                    "Please refresh your home screen and forecast tab to update results",
                     Toast.LENGTH_LONG
                 ).show()
             } else if (resultCode == Activity.RESULT_CANCELED) {

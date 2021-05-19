@@ -5,6 +5,7 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import android.text.TextUtils.split
 import android.view.View
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
@@ -14,6 +15,11 @@ import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
+
+fun capitalizeEachLetter(string: String):String{
+    val newStr = string.split(" ").joinToString(" ") { it.capitalize(Locale.ROOT) }.trimEnd();
+    return newStr
+}
 fun convertKelvinToCelsius(number: Number): Double {
     return DecimalFormat().run {
         applyPattern(".##")
